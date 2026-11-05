@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Global Travel and Tours — RingCentral Call Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0A1628;--text:#EAF0F7;--muted:#A6B4C8;--faint:#7D8CA3;
+  --glass:rgba(255,255,255,.075);--glass-2:rgba(255,255,255,.11);--glass-3:rgba(255,255,255,.16);
+  --amber:#F5B323;--in:#4C9BFF;--out:#34D399;--miss:#FF6B6B;--warn:#FBBF24;--pro:#C4B5FD;
+  --r-lg:22px;--r-md:16px;--r-sm:10px;
+  --shadow:0 12px 40px rgba(2,8,23,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh}
+.bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+   radial-gradient(55vw 55vw at 8% -12%,rgba(76,155,255,.38),transparent 62%),
+   radial-gradient(45vw 45vw at 102% 6%,rgba(245,179,35,.22),transparent 60%),
+   radial-gradient(60vw 50vw at 60% 112%,rgba(52,211,153,.20),transparent 62%),
+   radial-gradient(40vw 40vw at 30% 60%,rgba(196,181,253,.10),transparent 60%),
+   var(--bg)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:6px}
+[hidden]{display:none!important}
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+.num,.n{font-variant-numeric:tabular-nums}
+
+/* Top bar */
+.top{position:sticky;top:0;z-index:30;background:rgba(10,22,40,.55);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%)}
+.top-in{max-width:1320px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+.logo{width:42px;height:42px;border-radius:13px;background:var(--amber);display:grid;place-items:center;color:#0A1628;flex:none;box-shadow:0 6px 20px rgba(245,179,35,.35)}
+.brand b{font-size:17px;font-weight:700;display:block;line-height:1.25;letter-spacing:-.01em}
+.brand span{font-size:13px;color:var(--muted)}
+.btn{border:0;background:var(--glass-2);color:var(--text);padding:9px 16px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;transition:background .15s}
+.btn:hover:not(:disabled){background:var(--glass-3)}
+.btn.primary{background:var(--amber);color:#0A1628}
+.btn.primary:hover{background:#FFC447}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+main{max-width:1320px;margin:0 auto;padding:22px 24px 70px}
+
+/* Empty state */
+.empty{max-width:720px;margin:70px auto;padding:56px 36px;text-align:center}
+body.over .empty{background:rgba(245,179,35,.12)}
+.empty h1{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+.empty p{color:var(--muted);margin:12px auto 26px;max-width:54ch}
+
+/* Files and filters */
+.files{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.files .lbl{font-size:13.5px;color:var(--muted)}
+.file{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;border-radius:14px}
+.file input{border:0;background:var(--glass-2);border-radius:8px;padding:4px 10px;width:190px;font-weight:600}
+.file small{color:var(--faint);font-size:12.5px}
+.file button{border:0;background:none;cursor:pointer;color:var(--miss);font-size:20px;line-height:1;padding:0 4px}
+.filters{position:sticky;z-index:20;margin-top:14px;padding:12px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;border-radius:var(--r-md);
+  background:rgba(14,30,52,.6);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.filters label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+select{appearance:none;border:0;background:var(--glass-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23A6B4C8' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  padding:7px 30px 7px 12px;border-radius:10px;min-width:160px;font-size:14px;cursor:pointer}
+select option{background:#13243D;color:var(--text)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;align-items:center}
+.chip{border:0;background:var(--amber);color:#0A1628;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.chip.clear{background:rgba(255,107,107,.18);color:#FFB4B4}
+
+/* Board */
+.board{margin-top:20px;padding:24px}
+.board-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.board-head h2{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.board-head p{color:var(--muted);font-size:14px}
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.tile{border:0;text-align:left;cursor:pointer;padding:16px 16px 14px;border-radius:var(--r-md);background:var(--glass);color:var(--text);transition:background .15s,transform .15s}
+.tile:hover{background:var(--glass-2);transform:translateY(-2px)}
+.tile .k{font-size:13.5px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:7px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.tile .v{font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:8px 0 4px}
+.tile .s{font-size:12.5px;color:var(--faint);line-height:1.45}
+.tile.alert .v{color:var(--miss)}
+.strip{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:14px}
+.stat{border:0;text-align:left;padding:14px 16px;border-radius:var(--r-md);background:rgba(255,255,255,.05);color:var(--text)}
+button.stat{cursor:pointer}button.stat:hover{background:var(--glass)}
+.stat .k{font-size:12.5px;color:var(--muted)}
+.stat .v{font-size:21px;font-weight:700;line-height:1.35;letter-spacing:-.01em}
+.stat .s{font-size:12px;color:var(--faint)}
+.stat.bad .v{color:var(--miss)}
+
+/* Sections */
+.sec{margin-top:44px;scroll-margin-top:150px}
+.sec-h{margin-bottom:16px}
+.sec-h h2{font-size:23px;font-weight:700;letter-spacing:-.015em}
+.sec-h p{color:var(--muted);font-size:14.5px;max-width:80ch;margin-top:2px}
+.panel{padding:20px}
+.panel h3{font-size:16px;font-weight:600;margin-bottom:10px}
+.panel .hint{font-size:13.5px;color:var(--muted);margin:-4px 0 12px}
+.cols{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.mt{margin-top:18px}
+.summary{display:grid;grid-template-columns:1.65fr 1fr;gap:18px}
+.summary ul{list-style:none}
+.summary li{padding:10px 12px;border-radius:12px;max-width:82ch}
+.summary li:nth-child(odd){background:rgba(255,255,255,.035)}
+.summary li.alert{background:rgba(255,107,107,.13);color:#FFD0D0}
+.summary li b{color:#fff;font-weight:700}
+.todo li{padding-left:36px;position:relative}
+.todo li::before{content:"";position:absolute;left:12px;top:1.05em;width:12px;height:12px;border-radius:4px;background:var(--amber);opacity:.85}
+
+/* Segmented filter */
+.seg{display:inline-flex;gap:6px;padding:5px;border-radius:14px;background:rgba(255,255,255,.06);margin-bottom:14px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13.5px}
+.seg button.on{background:var(--glass-3);color:#fff}
+.seg button b{font-weight:700;margin-left:4px}
+
+/* Employees */
+.emps{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.emp{padding:20px}
+.emp-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.emp-h h3{font-size:19px;font-weight:700;margin:0}
+.emp p{font-size:14.5px;color:#D5DEEA}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.mini div{background:rgba(255,255,255,.06);border-radius:12px;padding:10px 12px}
+.mini b{display:block;font-size:19px;font-weight:700;line-height:1.3}
+.mini span{font-size:12px;color:var(--muted)}
+.tops{font-size:13.5px;color:var(--muted)}
+.tops b{color:var(--text);font-weight:600}
+.ghost{border:0;background:var(--glass-2);border-radius:10px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)}
+.ghost:hover{background:var(--glass-3)}
+
+.chartbox{position:relative;height:300px}
+.chartbox.sm{height:260px}
+
+/* Tables */
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.tools input{flex:1;min-width:220px;padding:9px 14px;border:0;border-radius:12px;background:var(--glass-2)}
+.tools input::placeholder{color:var(--faint)}
+.tools .count{font-size:13px;color:var(--muted)}
+.tw{overflow:auto;max-height:560px;border-radius:14px;background:rgba(5,14,28,.25)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 14px;text-align:left;vertical-align:top}
+th{position:sticky;top:0;z-index:1;background:rgba(22,40,66,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);font-weight:600;color:var(--muted);font-size:12.5px;white-space:nowrap}
+th.s{cursor:pointer}th.s:hover{color:#fff}
+.n{text-align:right;white-space:nowrap}
+tbody tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+tbody tr:hover td{background:rgba(255,255,255,.07)}
+tr.c{cursor:pointer}
+tfoot td{font-weight:700;background:rgba(22,40,66,.92);position:sticky;bottom:0}
+.ph{white-space:nowrap}
+.sub{display:block;font-size:12.5px;color:var(--faint)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;background:rgba(255,255,255,.1);color:#DCE4EF}
+.pill.ok{background:rgba(52,211,153,.16);color:#86EFC4}
+.pill.bad{background:rgba(255,107,107,.17);color:#FFB0B0}
+.pill.warn{background:rgba(251,191,36,.16);color:#FCD98A}
+.pill.in{background:rgba(76,155,255,.18);color:#A9CCFF}
+.pill.out{background:rgba(52,211,153,.16);color:#86EFC4}
+.pill.int{background:rgba(196,181,253,.18);color:#DCD3FF}
+.notes li{margin:7px 0 7px 20px;max-width:86ch;color:#D5DEEA}
+.none{color:var(--muted);padding:14px}
+
+/* Drawer */
+.scrim{position:fixed;inset:0;background:rgba(2,8,23,.5);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(600px,100%);z-index:50;transform:translateX(105%);transition:transform .28s ease;display:flex;flex-direction:column;
+  background:rgba(14,30,52,.82);-webkit-backdrop-filter:blur(24px) saturate(150%);backdrop-filter:blur(24px) saturate(150%);box-shadow:-20px 0 50px rgba(2,8,23,.5)}
+.drawer.open{transform:none}
+.dh{padding:24px 24px 16px;position:relative}
+.dh h3{font-size:22px;font-weight:700}
+.dh .x{position:absolute;right:16px;top:16px;border:0;background:var(--glass-2);color:#fff;width:36px;height:36px;border-radius:10px;font-size:20px;cursor:pointer}
+.db{padding:4px 24px 24px;overflow:auto}
+.dstats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
+.dstats div{background:rgba(255,255,255,.07);border-radius:12px;padding:10px}
+.dstats b{display:block;font-size:18px;font-weight:700}
+.dstats span{font-size:12px;color:var(--muted)}
+.tl{list-style:none}
+.tl li{display:grid;grid-template-columns:120px 1fr auto;gap:12px;padding:11px 12px;border-radius:12px;align-items:start;font-size:14px}
+.tl li:nth-child(odd){background:rgba(255,255,255,.04)}
+.tile,.stat{display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start}
+@media(max-width:1100px){.tiles,.strip{grid-template-columns:repeat(3,1fr)}.summary{grid-template-columns:1fr}}
+@media(max-width:640px){main{padding:14px}.tiles,.strip{grid-template-columns:repeat(2,1fr)}.tile .v{font-size:32px}
+  .emps{grid-template-columns:1fr}.mini{grid-template-columns:repeat(2,1fr)}.dstats{grid-template-columns:repeat(3,1fr)}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+@media print{
+  body{background:#fff;color:#111}.bg,.filters,.files,.drawer,.scrim,.tools,.seg,.ghost,.top .btn{display:none!important}
+  .top{position:static;background:#fff;color:#111}.brand span{color:#444}
+  .glass,.tile,.stat,.mini div,.tw{background:#fff!important;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;color:#111}
+  .tile .k,.stat .k,.tile .s,.stat .s,.sec-h p,.panel .hint,th,.sub,.tops,.mini span{color:#555!important}
+  th,tfoot td{background:#f1f3f6!important;position:static}td{color:#111}.summary li,.emp p,.notes li{color:#111;background:none!important}
+  .tw{max-height:none;overflow:visible}.sec{break-inside:avoid-page}.panel,.emp{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+
+<header class="top"><div class="top-in">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></div>
+    <div><b>Global Travel and Tours</b><span id="period">RingCentral call report</span></div>
+  </div>
+  <label class="btn primary" tabindex="0">Add CSV files<input type="file" id="file" accept=".csv,text/csv" multiple hidden></label>
+  <button class="btn" id="printBtn" disabled>Print or save PDF</button>
+  <button class="btn" id="exportBtn" disabled>Download report</button>
+</div></header>
+
+<main>
+  <section class="empty glass" id="empty">
+    <h1>Turn your RingCentral call log into a business report</h1>
+    <p>Drop the CSV you exported from RingCentral anywhere on this page. Add one file per employee, or a company call log with an Extension column, to compare employees side by side.</p>
+    <label class="btn primary" tabindex="0">Choose CSV files<input type="file" id="file2" accept=".csv,text/csv" multiple hidden></label>
+  </section>
+
+  <div id="app" hidden>
+    <div class="files" id="files"></div>
+
+    <div class="filters" id="filters">
+      <label>Employee or line<select id="fEmp"></select></label>
+      <label>Caller type<select id="fScope"></select></label>
+      <label>Direction<select id="fDir"></select></label>
+      <label>Result<select id="fStatus"></select></label>
+      <label>Hour<select id="fHour"></select></label>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <section id="boardSec" class="glass board">
+      <div class="board-head"><h2>Call board</h2><p id="boardSub">Select any number to see those calls in the list below</p></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="strip" id="strip"></div>
+    </section>
+
+    <section class="sec" id="sumSec">
+      <div class="sec-h"><h2>Executive summary</h2><p>Written from the data and updated whenever you change a filter.</p></div>
+      <div class="summary">
+        <div class="glass panel"><h3>Key facts</h3><ul id="sumList"></ul></div>
+        <div class="glass panel"><h3>Action items</h3><ul class="todo" id="todo"></ul></div>
+      </div>
+    </section>
+
+    <section class="sec" id="missSec">
+      <div class="sec-h"><h2>Missed calls</h2><p id="missNote"></p></div>
+      <div class="glass panel">
+        <div class="seg" id="missTabs"></div>
+        <div class="tw" id="missTable"></div>
+      </div>
+    </section>
+
+    <section class="sec" id="empSec">
+      <div class="sec-h"><h2>Employee activity</h2><p id="empNote"></p></div>
+      <div class="emps" id="emps"></div>
+      <div class="glass panel mt"><h3>Employee comparison</h3><p class="hint">Select a row to filter the whole report to that employee.</p><div class="tw" id="empTable"></div></div>
+      <div class="glass panel mt"><h3>Calls from colleague extensions</h3><p class="hint">Internal calls between staff. These are not customer calls. Select a row to see each call.</p><div class="tw" id="intTable"></div></div>
+    </section>
+
+    <section class="sec" id="timeSec">
+      <div class="sec-h"><h2>Timing and results</h2><p>Select any bar or slice to filter the report to those calls.</p></div>
+      <div class="glass panel"><h3>Calls by hour</h3><div class="chartbox"><canvas id="cHour" role="img" aria-label="Stacked bar chart of calls per hour by result"></canvas></div></div>
+      <div class="cols mt">
+        <div class="glass panel"><h3>Incoming and outgoing</h3><div class="chartbox sm"><canvas id="cDir" role="img" aria-label="Doughnut chart of incoming and outgoing calls"></canvas></div></div>
+        <div class="glass panel"><h3>Call results</h3><div class="chartbox sm"><canvas id="cStatus" role="img" aria-label="Doughnut chart of call results"></canvas></div></div>
+        <div class="glass panel"><h3>Talk time ranges</h3><div class="chartbox sm"><canvas id="cDur" role="img" aria-label="Bar chart of connected calls by talk time range"></canvas></div></div>
+      </div>
+      <div class="glass panel mt"><h3>Hourly breakdown</h3><div class="tw" id="hourTable"></div></div>
+    </section>
+
+    <section class="sec" id="ofSec">
+      <div class="sec-h"><h2>Outgoing calls that didn't connect</h2><p id="ofNote"></p></div>
+      <div class="glass panel"><div class="tw" id="ofTable"></div></div>
+    </section>
+
+    <section class="sec" id="custSec">
+      <div class="sec-h"><h2>Contacts</h2><p>Every number in the log with its calls and talk time. Select a row to open its full call history.</p></div>
+      <div class="glass panel"><div class="tools"><input id="cq" type="search" placeholder="Search a name or number"><span class="count" id="cCount"></span></div><div class="tw" id="custTable"></div></div>
+    </section>
+
+    <section class="sec" id="recSec">
+      <div class="sec-h"><h2>All call records</h2><p>Select a column name to sort. Select a row to open that number's history.</p></div>
+      <div class="glass panel"><div class="tools"><input id="rq" type="search" placeholder="Search a name, number or result"><span class="count" id="rCount"></span></div><div class="tw" id="recTable"></div></div>
+    </section>
+
+    <section class="sec" id="noteSec">
+      <div class="sec-h"><h2>Method and data notes</h2><p>How every number in this report was counted.</p></div>
+      <div class="cols">
+        <div class="glass panel"><h3>How each call was classified</h3><div class="tw" id="ruleTable"></div></div>
+        <div class="glass panel"><h3>Data notes</h3><ul class="notes" id="notes"></ul></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"><div class="dh" id="dh"></div><div class="db" id="db"></div></aside>
+<script>
+/* ===== Helpers ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>Number(n).toLocaleString('en-US');
+const pct=(a,b)=>b?(a/b*100).toFixed(1)+'%':'0%';
+const sum=(a,f)=>a.reduce((s,r)=>s+f(r),0);
+const uniq=a=>new Set(a.map(r=>r.key)).size;
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function dur(t){t=Math.round(t||0);const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return h?`${h}h ${m}m ${s}s`:m?`${m}m ${s}s`:`${s}s`;}
+const mins=m=>m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`;
+const hourL=h=>`${(h%12)||12} ${h<12?'AM':'PM'}`;
+const clock=r=>r.min==null?esc(r.time):`${(r.hour%12)||12}:${String(r.min%60).padStart(2,'0')} ${r.hour<12?'AM':'PM'}`;
+const dateL=d=>d?d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}):'—';
+const dateS=d=>d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+const C={in:'#4C9BFF',out:'#34D399',miss:'#FF6B6B',warn:'#FBBF24'};
+const ST={received:{l:'Answered',c:'ok',col:'#4C9BFF'},missed:{l:'Missed',c:'bad',col:'#FF6B6B'},
+  connected:{l:'Connected',c:'ok',col:'#34D399'},noanswer:{l:'No answer',c:'warn',col:'#FBBF24'},
+  hangup:{l:'Hung up while ringing',c:'warn',col:'#F59E0B'},failed:{l:'Failed',c:'bad',col:'#C084FC'}};
+const DIRL={in:'Incoming',out:'Outgoing'};
+const SCOPEL={customer:'Customers only',internal:'Colleague extensions only'};
+const dirPill=d=>`<span class="pill ${d}">${DIRL[d]}</span>`;
+const stPill=s=>`<span class="pill ${ST[s].c}">${ST[s].l}</span>`;
+const GENERIC=/^(wireless caller|caller,\s*wireless|unknown|anonymous|private|restricted)$/i;
+
+/* ===== Parsing ===== */
+function parseCSV(text){
+  text=text.replace(/^\uFEFF/,'');const out=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c=='"'){if(text[i+1]=='"'){f+='"';i++;}else q=false;}else f+=c;}
+    else if(c=='"')q=true;else if(c==','){row.push(f);f='';}
+    else if(c=='\n'||c=='\r'){if(c=='\r'&&text[i+1]=='\n')i++;row.push(f);f='';if(row.some(x=>x.trim()!==''))out.push(row);row=[];}
+    else f+=c;}
+  row.push(f);if(row.some(x=>x.trim()!==''))out.push(row);
+  if(!out.length)return[];
+  const head=out.shift().map(h=>h.replace(/^\uFEFF/,'').replace(/"/g,'').trim());
+  return out.map(r=>{const o={};head.forEach((h,i)=>o[h]=(r[i]||'').trim());return o;});
+}
+const col=(r,...names)=>{for(const n of names){const k=Object.keys(r).find(k=>k.toLowerCase()===n.toLowerCase());if(k&&r[k])return r[k];}return '';};
+function parseDur(s){s=(s||'').trim();if(!s||s==='-')return 0;if(/^\d+(\.\d+)?$/.test(s))return +s;
+  if(s.includes(':'))return s.split(':').map(x=>+x||0).reduce((a,b)=>a*60+b,0);
+  let t=0;const h=s.match(/(\d+)\s*h/i),m=s.match(/(\d+)\s*m(?!s)/i),x=s.match(/(\d+)\s*s/i);
+  if(h)t+=h[1]*3600;if(m)t+=m[1]*60;if(x)t+=+x[1];return t;}
+function parseDate(s){s=(s||'').replace(/^[A-Za-z]{3,9},?\s+/,'').trim();
+  let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){let a=+m[1],b=+m[2],y=+m[3];if(y<100)y+=2000;const[mo,d]=a>12?[b,a]:[a,b];const dt=new Date(y,mo-1,d);return isNaN(dt)?null:dt;}
+  m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  const dt=new Date(s);return isNaN(dt)?null:new Date(dt.getFullYear(),dt.getMonth(),dt.getDate());}
+function parseClock(t){const m=(t||'').match(/(\d{1,2}):(\d{2})/);if(!m)return null;
+  let h=+m[1];if(/pm/i.test(t)&&h<12)h+=12;if(/am/i.test(t)&&h==12)h=0;return h*60+(+m[2]);}
+const cleanName=n=>{n=(n||'').trim();if(n==='-'||n==='—')return '';return n.replace(/^.*?\bTRAVELS?\b\s*-\s*/i,'').trim();};
+
+/* RingCentral rules:
+   Phone Call = incoming, VoIP Call / RingOut / Transfer = outgoing (when no Direction column).
+   Accepted = incoming answered. Missed = rang, no device answered. Call connected = outbound connected.
+   Hang Up on outbound = staff hung up while ringing; on inbound = caller hung up before answer.
+   Stopped / Answered Elsewhere = extra leg of a call answered on another phone, excluded. */
+function classify(o){
+  const res=o.result.toLowerCase(),act=o.action.toLowerCase(),typ=o.type.toLowerCase(),dc=o.direction.toLowerCase();
+  o.leg=/stopped|answered elsewhere/.test(res);
+  const hasDir=/inbound|outbound|incoming|outgoing/.test(dc);
+  let dir=/inbound|incoming/.test(dc)?'in':/outbound|outgoing/.test(dc)?'out':
+    /incoming|inbound/.test(typ)?'in':/outgoing|outbound/.test(typ)?'out':
+    /voip|ring ?out|transfer|calling card/.test(act)?'out':'in';
+  let st,known=true;
+  if(/accept/.test(res)){if(!hasDir)dir='in';st=dir==='in'?'received':'connected';}
+  else if(/miss|voicemail/.test(res)){if(!hasDir)dir='in';st=dir==='in'?'missed':'noanswer';}
+  else if(/connected|completed/.test(res))st=dir==='out'?'connected':'received';
+  else if(/no answer/.test(res))st=dir==='out'?'noanswer':'missed';
+  else if(/hang ?up|abandon/.test(res))st=dir==='out'?'hangup':'missed';
+  else if(/fail|busy|reject|error|declin|wrong number|offline|blocked|not allowed|restricted|disabled/.test(res))st=dir==='out'?'failed':'missed';
+  else{known=false;st=o.dur>0?(dir==='out'?'connected':'received'):(dir==='out'?'noanswer':'missed');}
+  o.dir=dir;o.status=st;o.known=known;o.connected=st==='received'||st==='connected';
+}
+
+/* ===== State ===== */
+let FILES=[],ROWS=[],LEGS=[],NAMES={},charts={},firstPaint=true,missTab='all';
+let F={emp:'',scope:'',dir:'',status:'',hour:''},recSort={k:'ts',d:-1};
+const empName=k=>!k?'':k.startsWith('x:')?'Ext '+k.slice(2):((FILES.find(f=>f.id===k)||{}).label||'');
+
+function readFiles(list){
+  const arr=[...list].filter(f=>/\.csv$/i.test(f.name)||/csv/.test(f.type));
+  if(!arr.length){alert('Add a CSV file exported from RingCentral.');return;}
+  Promise.all(arr.map(f=>f.text().then(t=>({f,t})))).then(res=>{
+    res.forEach(({f,t})=>{
+      const raw=parseCSV(t);
+      if(!raw.length||!Object.keys(raw[0]).some(k=>/^(action result|result)$/i.test(k.trim()))){alert(`${f.name} doesn't have RingCentral call log columns. Export the call log from RingCentral and try again.`);return;}
+      FILES.push({id:'f'+Date.now()+Math.floor(Math.random()*1e6),fname:f.name,label:FILES.length?'Line '+(FILES.length+1):'Main line',raw});
+    });
+    rebuild(true);
+  });
+}
+['file','file2'].forEach(id=>$(id).addEventListener('change',e=>{readFiles(e.target.files);e.target.value='';}));
+document.addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('over');});
+document.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('over');});
+document.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('over');if(e.dataTransfer.files.length)readFiles(e.dataTransfer.files);});
+
+function rebuild(reset){
+  ROWS=[];LEGS=[];let idx=0;
+  FILES.forEach(fl=>fl.raw.forEach(r=>{
+    const o={idx:++idx,fid:fl.id,type:col(r,'Type'),direction:col(r,'Direction'),number:col(r,'Phone Number').trim(),nameRaw:col(r,'Name'),
+      date:col(r,'Date'),time:col(r,'Time'),action:col(r,'Action'),result:col(r,'Action Result','Result'),
+      desc:col(r,'Result Description','Reason Description'),durRaw:col(r,'Duration'),ext:col(r,'Extension','Extension Number','Ext')};
+    o.dur=parseDur(o.durRaw);o.dt=parseDate(o.date);o.min=parseClock(o.time);o.hour=o.min==null?null:Math.floor(o.min/60);
+    o.ts=(o.dt?o.dt.getTime():0)+(o.min||0)*60000+(1e5-idx)/1e3;
+    classify(o);
+    if(!o.number){const fr=col(r,'From'),to=col(r,'To');o.number=(o.dir==='in'?fr:to).trim();}
+    o.internal=/^\d{2,5}$/.test(o.number.replace(/\s/g,''));
+    o.cname=cleanName(o.nameRaw);o.key=o.number||o.cname||'unknown';
+    o.empKey=o.ext?'x:'+(o.ext.replace(/\D/g,'')||o.ext):fl.id;
+    o.talk=o.connected?o.dur:0;o.ring=o.connected?0:o.dur;
+    (o.leg?LEGS:ROWS).push(o);
+  }));
+  NAMES={};const cand={};ROWS.forEach(r=>(cand[r.key]=cand[r.key]||[]).push(r.cname));
+  for(const k in cand){const cnt={};cand[k].filter(n=>n&&!GENERIC.test(n)).forEach(n=>cnt[n]=(cnt[n]||0)+1);
+    const best=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
+    NAMES[k]=best?best[0]:(cand[k].some(n=>n)?'Wireless caller':'No name saved');}
+  const has=ROWS.length>0;
+  $('empty').hidden=has;$('app').hidden=!has;$('printBtn').disabled=$('exportBtn').disabled=!has;
+  if(!has){$('period').textContent='RingCentral call report';return;}
+  if(reset){F={emp:'',scope:'',dir:'',status:'',hour:''};missTab='all';}
+  renderFiles();fillFilters();render();
+  $('filters').style.top=(document.querySelector('.top').offsetHeight+8)+'px';
+}
+
+function renderFiles(){
+  $('files').innerHTML=`<span class="lbl">Name each line or employee:</span>`+FILES.map(f=>
+    `<div class="file glass"><input data-id="${f.id}" value="${esc(f.label)}" aria-label="Employee name"><small>${esc(f.fname)}, ${fmt(f.raw.length)} rows</small><button data-rm="${f.id}" title="Remove file" aria-label="Remove file">×</button></div>`).join('');
+  $('files').querySelectorAll('input').forEach(i=>i.oninput=()=>{FILES.find(f=>f.id===i.dataset.id).label=i.value||'Unnamed line';fillFilters();render();});
+  $('files').querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{FILES=FILES.filter(f=>f.id!==b.dataset.rm);rebuild(true);});
+}
+const empKeys=()=>[...new Set(ROWS.map(r=>r.empKey))];
+function fillFilters(){
+  const opt=(v,l)=>`<option value="${esc(v)}">${esc(l)}</option>`;
+  $('fEmp').innerHTML=opt('','All employees')+empKeys().map(k=>opt(k,empName(k))).join('');
+  $('fScope').innerHTML=opt('','Customers and colleagues')+Object.entries(SCOPEL).map(([k,v])=>opt(k,v)).join('');
+  $('fDir').innerHTML=opt('','Incoming and outgoing')+Object.entries(DIRL).map(([k,v])=>opt(k,v)).join('');
+  $('fStatus').innerHTML=opt('','All results')+Object.entries(ST).map(([k,v])=>opt(k,v.l)).join('');
+  const hs=[...new Set(ROWS.filter(r=>r.hour!=null).map(r=>r.hour))].sort((a,b)=>a-b);
+  $('fHour').innerHTML=opt('','All day')+hs.map(h=>opt(h,hourL(h)+' hour')).join('');
+}
+[['fEmp','emp'],['fScope','scope'],['fDir','dir'],['fStatus','status'],['fHour','hour']].forEach(([id,k])=>$(id).onchange=e=>{F[k]=e.target.value;render();});
+
+const filtered=()=>ROWS.filter(r=>(!F.emp||r.empKey===F.emp)&&(!F.scope||(F.scope==='internal')===r.internal)&&
+  (!F.dir||r.dir===F.dir)&&(!F.status||r.status===F.status)&&(F.hour===''||r.hour===+F.hour));
+function go(id){$(id).scrollIntoView({behavior:REDUCE?'auto':'smooth',block:'start'});}
+function setF(o,target){Object.assign(F,o);render();if(target)go(target);}
+
+/* ===== Stats ===== */
+function stats(S){
+  const IN=S.filter(r=>r.dir==='in'),OUT=S.filter(r=>r.dir==='out');
+  const REC=IN.filter(r=>r.connected),MISS=IN.filter(r=>!r.connected),OC=OUT.filter(r=>r.connected),ONC=OUT.filter(r=>!r.connected);
+  const CON=S.filter(r=>r.connected);
+  return{S,N:S.length,IN,OUT,REC,MISS,OC,ONC,CON,U:uniq(S),talk:sum(S,r=>r.talk),tin:sum(IN,r=>r.talk),tout:sum(OUT,r=>r.talk),ring:sum(S,r=>r.ring)};
+}
+const nextConnected=r=>ROWS.filter(x=>x.key===r.key&&x.ts>r.ts&&x.connected).sort((a,b)=>a.ts-b.ts)[0];
+function missedList(S){
+  return S.filter(r=>r.dir==='in'&&!r.connected).map(r=>{const n=nextConnected(r);
+    return{r,n,m:n?Math.max(0,Math.round((n.ts-r.ts)/60000)):null,byStaff:n?n.dir==='out':false};}).sort((a,b)=>a.r.ts-b.r.ts);
+}
+const pendingCustomers=S=>{const g={};missedList(S).filter(x=>!x.r.internal).forEach(x=>{g[x.r.key]=x;});return Object.values(g).filter(x=>!x.n);};
+function outFails(S){
+  const g={};S.filter(r=>r.dir==='out'&&!r.connected).forEach(r=>(g[r.key]=g[r.key]||[]).push(r));
+  return Object.entries(g).map(([k,a])=>{a.sort((x,y)=>x.ts-y.ts);const last=a[a.length-1],n=nextConnected(last);
+    return{key:k,rows:a,last,n,m:n?Math.max(0,Math.round((n.ts-last.ts)/60000)):null,internal:a[0].internal};})
+    .sort((a,b)=>(!!a.n-!!b.n)||b.rows.length-a.rows.length);
+}
+function byKey(rows){const g={};rows.forEach(r=>(g[r.key]=g[r.key]||[]).push(r));
+  return Object.entries(g).map(([k,a])=>{a.sort((x,y)=>x.ts-y.ts);const IN=a.filter(r=>r.dir==='in'),OUT=a.filter(r=>r.dir==='out');
+    return{key:k,name:NAMES[k],number:a[0].number,internal:a[0].internal,rows:a,n:a.length,in:IN.length,out:OUT.length,
+      rec:IN.filter(r=>r.connected).length,miss:IN.filter(r=>!r.connected).length,oc:OUT.filter(r=>r.connected).length,
+      onc:OUT.filter(r=>!r.connected).length,talk:sum(a,r=>r.talk),first:a[0],last:a[a.length-1]};});}
+function periodText(S){
+  const ds=S.filter(r=>r.dt).map(r=>r.dt.getTime());if(!ds.length)return '';
+  const a=new Date(Math.min(...ds)),b=new Date(Math.max(...ds)),s=[...S].sort((x,y)=>x.ts-y.ts);
+  if(a.getTime()===b.getTime())return `${dateL(a)}, ${clock(s[0])} to ${clock(s[s.length-1])}`;
+  return `${dateL(a)} to ${dateL(b)}`;
+}
+const topEntry=o=>Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
+const multiDay=()=>new Set(ROWS.map(r=>r.date)).size>1;
+const when=r=>`${multiDay()&&r.dt?dateS(r.dt)+', ':''}${clock(r)}`;
+
+/* ===== Table helper ===== */
+function tbl(head,rows,{num=[],foot=null,sortable=null}={}){
+  const cls=i=>num.includes(i)?' class="n"':'';
+  const th=head.map((h,i)=>{const s=sortable&&sortable[i];const c=[num.includes(i)?'n':'',s?'s':''].filter(Boolean).join(' ');
+    return `<th${c?` class="${c}"`:''}${s?` data-sort="${s}"`:''}>${h}${s&&recSort.k===s?(recSort.d>0?' ▲':' ▼'):''}</th>`;}).join('');
+  return `<table><thead><tr>${th}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${cls(i)}>${c}</td>`).join('')}</tr>`).join('')}</tbody>${foot?`<tfoot><tr>${foot.map((c,i)=>`<td${cls(i)}>${c}</td>`).join('')}</tr></tfoot>`:''}</table>`;
+}
+const wireRows=(id,keys)=>$(id).querySelectorAll('tbody tr').forEach((tr,i)=>{tr.classList.add('c');tr.tabIndex=0;
+  const fn=()=>openContact(keys[i]);tr.onclick=fn;tr.onkeydown=e=>{if(e.key==='Enter')fn();};});
+const nameCell=(k,internal)=>`${esc(NAMES[k])}${internal?' <span class="pill int">Colleague</span>':''}`;
+const numCell=n=>`<span class="ph">${/^\d{2,5}$/.test(n)?'Ext '+esc(n):esc(n)}</span>`;
+
+/* ===== Render ===== */
+function render(){
+  [['fEmp','emp'],['fScope','scope'],['fDir','dir'],['fStatus','status'],['fHour','hour']].forEach(([id,k])=>$(id).value=F[k]);
+  renderChips();
+  const S=filtered(),st=stats(S);
+  $('period').textContent=`RingCentral call report, ${periodText(ROWS)}`;
+  renderBoard(st);renderStrip(st);renderSummary(st);renderMissed(S);renderEmployees(S);renderInternal(S);
+  renderCharts(S);renderHourTable(S);renderOutFail(S);renderContacts(S);renderRecords(S);renderNotes();
+  firstPaint=false;
+}
+function renderChips(){
+  const lab={emp:v=>'Employee: '+empName(v),scope:v=>SCOPEL[v],dir:v=>DIRL[v],status:v=>ST[v].l,hour:v=>hourL(+v)+' hour'};
+  const act=Object.entries(F).filter(([,v])=>v!=='');
+  $('chips').innerHTML=act.map(([k,v])=>`<button class="chip" data-k="${k}" title="Remove filter">${esc(lab[k](v))} ×</button>`).join('')+
+    (act.length?'<button class="chip clear" data-k="*">Clear all filters</button>':'');
+  $('chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{if(b.dataset.k==='*')F={emp:'',scope:'',dir:'',status:'',hour:''};else F[b.dataset.k]='';render();});
+}
+
+function renderBoard(st){
+  const{N,IN,OUT,MISS,U}=st;
+  const cells=[
+    ['Total calls',N,`${fmt(U)} unique numbers`,{dir:'',status:''},'','#F5B323','recSec'],
+    ['Incoming',IN.length,`${pct(IN.length,N)} of all calls`,{dir:'in',status:''},'',C.in,'recSec'],
+    ['Outgoing',OUT.length,`${pct(OUT.length,N)} of all calls`,{dir:'out',status:''},'',C.out,'recSec'],
+    ['Unique incoming',uniq(IN),'different numbers called in',{dir:'in',status:''},'',C.in,'custSec'],
+    ['Unique outgoing',uniq(OUT),'different numbers called out',{dir:'out',status:''},'',C.out,'custSec'],
+    ['Missed calls',MISS.length,`from ${fmt(uniq(MISS))} numbers, ${pct(MISS.length,IN.length)} of incoming`,{},'alert',C.miss,'missSec']];
+  $('tiles').innerHTML=cells.map((c,i)=>`<button class="tile ${c[4]}" data-i="${i}"><div class="k"><span class="dot" style="background:${c[5]}"></span>${c[0]}</div><div class="v num" data-n="${c[1]}">${fmt(c[1])}</div><div class="s">${c[2]}</div></button>`).join('');
+  $('tiles').querySelectorAll('.tile').forEach(b=>b.onclick=()=>{const c=cells[b.dataset.i];if(c[6]==='missSec'){missTab='all';render();go('missSec');}else setF(c[3],c[6]);});
+  if(firstPaint&&!REDUCE){const els=[...$('tiles').querySelectorAll('.v')],t0=performance.now();
+    const step=t=>{const p=Math.min(1,(t-t0)/750),e=1-Math.pow(1-p,3);els.forEach(el=>el.textContent=fmt(Math.round(el.dataset.n*e)));if(p<1)requestAnimationFrame(step);};
+    requestAnimationFrame(step);}
+}
+function renderStrip(st){
+  const{IN,OUT,REC,OC,CON,talk,tin,tout,S}=st;
+  const pend=pendingCustomers(S).length,intN=S.filter(r=>r.internal).length;
+  const custMissed=new Set(S.filter(r=>r.dir==='in'&&!r.connected&&!r.internal).map(r=>r.key)).size;
+  const cells=[
+    ['div','Talk time',dur(talk),`Incoming ${dur(tin)}, outgoing ${dur(tout)}`,null,''],
+    ['button','Incoming answer rate',pct(REC.length,IN.length),`${fmt(REC.length)} of ${fmt(IN.length)} answered`,()=>setF({dir:'in',status:'received'},'recSec'),''],
+    ['button','Outgoing connect rate',pct(OC.length,OUT.length),`${fmt(OC.length)} of ${fmt(OUT.length)} connected`,()=>setF({dir:'out',status:'connected'},'recSec'),''],
+    ['div','Average talk time',dur(CON.length?talk/CON.length:0),'per connected call',null,''],
+    ['button','Customers never reached',fmt(pend),`of ${fmt(custMissed)} customers who missed a call`,()=>{missTab='pending';render();go('missSec');},pend?'bad':''],
+    ['button','Colleague calls',fmt(intN),'internal extensions',()=>go('empSec'),'']];
+  $('strip').innerHTML=cells.map(([t,k,v,s,,c],i)=>`<${t} class="stat ${c}" data-i="${i}"><div class="k">${k}</div><div class="v num">${v}</div><div class="s">${s}</div></${t}>`).join('');
+  $('strip').querySelectorAll('button').forEach(b=>b.onclick=cells[b.dataset.i][4]);
+}
+
+function renderSummary(st){
+  const{S,N,IN,OUT,REC,MISS,OC,ONC,CON,talk,tin,tout}=st;const L=[],T=[];
+  if(!N){$('sumList').innerHTML='<li>No calls match these filters.</li>';$('todo').innerHTML='';return;}
+  const ext=S.filter(r=>!r.internal),intl=S.filter(r=>r.internal);
+  L.push(`<b>${fmt(N)} calls</b> on ${periodText(S)}: <b>${fmt(IN.length)} incoming</b> and <b>${fmt(OUT.length)} outgoing</b>.`);
+  L.push(`<b>${fmt(uniq(IN))} different numbers</b> called in and staff called <b>${fmt(uniq(OUT))} different numbers</b>.`);
+  if(IN.length)L.push(`Of ${fmt(IN.length)} incoming calls, <b>${fmt(REC.length)} were answered</b> and <b>${fmt(MISS.length)} were missed</b>, an answer rate of ${pct(REC.length,IN.length)}.`);
+  if(OUT.length){const c=k=>ONC.filter(r=>r.status===k).length;
+    const parts=[['hangup','hung up while ringing'],['noanswer','not answered'],['failed','failed']].filter(([k])=>c(k)).map(([k,t])=>`${c(k)} ${t}`);
+    L.push(`Of ${fmt(OUT.length)} outgoing calls, <b>${fmt(OC.length)} connected</b>${ONC.length?` and ${fmt(ONC.length)} didn't (${parts.join(', ')})`:''}.`);}
+  L.push(`Total talk time was <b>${dur(talk)}</b>: ${dur(tin)} incoming and ${dur(tout)} outgoing, averaging ${dur(CON.length?talk/CON.length:0)} per connected call.`);
+  const hc={},hm={};S.forEach(r=>{if(r.hour==null)return;hc[r.hour]=(hc[r.hour]||0)+1;if(r.dir==='in'&&!r.connected)hm[r.hour]=(hm[r.hour]||0)+1;});
+  const ph=topEntry(hc),pm=topEntry(hm);
+  if(ph)L.push(`The busiest hour was <b>${hourL(+ph[0])}</b> with ${fmt(ph[1])} calls${pm?`. The most misses came in the ${hourL(+pm[0])} hour (${fmt(pm[1])})`:''}.`);
+  const cs=byKey(ext);
+  if(cs.length){const tc=[...cs].sort((a,b)=>b.n-a.n)[0],tt=[...cs].sort((a,b)=>b.talk-a.talk)[0];
+    L.push(`The most frequent customer was <b>${esc(tc.name)}</b> (${fmt(tc.n)} calls). The longest total conversation was with <b>${esc(tt.name)}</b> (${dur(tt.talk)}).`);}
+  if(intl.length){const names=[...new Set(intl.map(r=>`${NAMES[r.key]} (Ext ${r.number})`))];
+    L.push(`${fmt(intl.length)} calls came from colleague extensions: ${names.map(esc).join(', ')}. These are internal, not customer calls.`);}
+  const ml=missedList(S).filter(x=>!x.r.internal),reached=ml.filter(x=>x.n),staff=reached.filter(x=>x.byStaff).length,pend=pendingCustomers(S);
+  const custMissed=new Set(ml.map(x=>x.r.key)).size;
+  if(ml.length){
+    L.push(`${fmt(ml.length)} missed customer calls came from ${fmt(custMissed)} customers. ${fmt(custMissed-pend.length)} of them were reached later, <b>${fmt(staff)} missed calls were returned by staff</b> and the rest connected because the caller tried again.`);
+    if(pend.length)L.push({a:true,t:`<b>${fmt(pend.length)} customers missed a call and were never reached:</b> ${pend.map(x=>esc(NAMES[x.r.key])+' '+esc(x.r.number)).join(', ')}.`});}
+  const early=MISS.filter(r=>!r.internal&&r.hour!=null&&r.hour<9).length;
+  if(early)L.push(`${fmt(early)} customer calls were missed before 9 AM.`);
+  $('sumList').innerHTML=L.map(x=>typeof x==='string'?`<li>${x}</li>`:`<li class="alert">${x.t}</li>`).join('');
+
+  if(pend.length)T.push(`<b>Call back ${fmt(pend.length)} customers today.</b> The full list is in the missed calls section, filtered to "Never reached".`);
+  if(ml.length&&!staff)T.push('No missed customer call was returned by staff. Set a rule to return every missed call within 15 minutes.');
+  if(IN.length&&MISS.length/IN.length>.15&&pm)T.push(`${pct(MISS.length,IN.length)} of incoming calls were missed. Put an extra person on the phones around ${hourL(+pm[0])}.`);
+  if(early)T.push('Calls arrive before the office opens. Turn on forwarding or a voicemail greeting for early mornings.');
+  const of=outFails(S).filter(x=>!x.n&&!x.internal);
+  if(of.length)T.push(`${fmt(of.length)} numbers were called but never connected. Try again or send an SMS.`);
+  const unsaved=cs.filter(c=>c.name==='No name saved'||c.name==='Wireless caller').length;
+  if(unsaved)T.push(`${fmt(unsaved)} customer numbers have no saved name. Save names so customers are easy to recognise in reports.`);
+  if(empKeys().length===1)T.push('To compare employees, export the Company Call Log in Detailed view, or add one CSV per employee.');
+  $('todo').innerHTML=T.map(x=>`<li>${x}</li>`).join('');
+}
+
+/* ===== Missed calls ===== */
+function renderMissed(S){
+  const all=missedList(S),groups={all,pending:all.filter(x=>!x.n),cust:all.filter(x=>!x.r.internal),int:all.filter(x=>x.r.internal)};
+  const labels={all:'All missed',pending:'Never reached',cust:'Customers',int:'Colleagues'};
+  $('missTabs').innerHTML=Object.keys(labels).map(k=>`<button data-t="${k}" class="${missTab===k?'on':''}">${labels[k]}<b>${groups[k].length}</b></button>`).join('');
+  $('missTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{missTab=b.dataset.t;renderMissed(filtered());});
+  const custNums=new Set(groups.cust.map(x=>x.r.key)).size,pend=pendingCustomers(S).length;
+  $('missNote').innerHTML=all.length?`A missed call rang this extension and no phone on it was answered. <b>${fmt(all.length)} calls</b> were missed: ${fmt(groups.cust.length)} from ${fmt(custNums)} customers and ${fmt(groups.int.length)} from colleagues. <b style="color:#FFB0B0">${fmt(pend)} customers were never reached.</b>`
+    :'No calls were missed for these filters.';
+  const list=groups[missTab];
+  if(!list.length){$('missTable').innerHTML='<p class="none">No missed calls in this view.</p>';return;}
+  const multi=empKeys().length>1;
+  $('missTable').innerHTML=tbl(['Date','Time','Caller number or ext','Caller name','Ring time',...(multi?['Rang on']:[]),'What happened next'],
+    list.map(({r,n,m,byStaff})=>[dateL(r.dt),clock(r),numCell(r.number),nameCell(r.key,r.internal),dur(r.dur),...(multi?[esc(empName(r.empKey))]:[]),
+      n?`<span class="pill ok">Reached</span> ${byStaff?'Staff called back':'Caller tried again, answered'} at ${when(n)} <span class="sub">${mins(m)} later</span>`
+       :`<span class="pill ${r.internal?'warn':'bad'}">${r.internal?'Not reached':'Call back now'}</span>`]),{num:[4]});
+  wireRows('missTable',list.map(x=>x.r.key));
+}
+
+/* ===== Employees ===== */
+function empStats(rows){const s=stats(rows),sorted=[...rows].sort((a,b)=>a.ts-b.ts),hc={};
+  rows.forEach(r=>{if(r.hour!=null)hc[r.hour]=(hc[r.hour]||0)+1;});const ph=topEntry(hc);
+  return{...s,first:sorted[0],last:sorted[sorted.length-1],peak:ph?+ph[0]:null,pend:pendingCustomers(rows).length,cust:uniq(rows.filter(r=>!r.internal))};}
+function renderEmployees(S){
+  const keys=empKeys(),single=keys.length===1;
+  $('empNote').innerHTML=single?'This file is the call log for one RingCentral line (extension). Type the employee\'s name in the box at the top. For a side-by-side comparison, export the Company Call Log in Detailed view, or add one CSV per employee.'
+    :`${fmt(keys.length)} lines are included. Each employee's activity is below.`;
+  const list=keys.map(k=>({k,rows:S.filter(r=>r.empKey===k)})).filter(x=>x.rows.length).map(x=>({...x,s:empStats(x.rows)}));
+  $('emps').innerHTML=list.length?list.map(({k,rows,s})=>{
+    const tops=byKey(rows.filter(r=>!r.internal)).sort((a,b)=>b.n-a.n||b.talk-a.talk).slice(0,3);
+    return `<article class="emp glass"><div class="emp-h"><h3>${esc(empName(k))}</h3><button class="ghost" data-emp="${k}">Show only these calls</button></div>
+      <p>${esc(empName(k))} handled <b>${fmt(s.N)} calls</b>. Incoming: ${fmt(s.IN.length)}, with ${fmt(s.REC.length)} answered and ${fmt(s.MISS.length)} missed. Outgoing: ${fmt(s.OUT.length)}, with ${fmt(s.OC.length)} connected${s.ONC.length?` and ${fmt(s.ONC.length)} not connected`:''}. Talk time was ${dur(s.talk)}, averaging ${dur(s.CON.length?s.talk/s.CON.length:0)} per call. First call ${clock(s.first)}, last call ${clock(s.last)}${s.peak!=null?`, busiest in the ${hourL(s.peak)} hour`:''}.${s.pend?` <b style="color:#FFB0B0">${fmt(s.pend)} customers still need a call back.</b>`:''}</p>
+      <div class="mini"><div><b class="num">${fmt(s.N)}</b><span>Calls</span></div><div><b class="num">${pct(s.REC.length,s.IN.length)}</b><span>Answer rate</span></div>
+        <div><b class="num">${dur(s.talk)}</b><span>Talk time</span></div><div><b class="num">${fmt(s.cust)}</b><span>Customers</span></div></div>
+      ${tops.length?`<div class="tops">Most contact with ${tops.map(t=>`<b>${esc(t.name)}</b> (${fmt(t.n)} calls, ${dur(t.talk)})`).join(', ')}</div>`:''}
+    </article>`;}).join(''):'<p class="none">No employee calls match these filters.</p>';
+  $('emps').querySelectorAll('[data-emp]').forEach(b=>b.onclick=()=>setF({emp:b.dataset.emp},'recSec'));
+  $('empTable').innerHTML=tbl(['Employee','Calls','Incoming','Answered','Missed','Answer rate','Outgoing','Connected','Not connected','Customers','Talk time','Avg','First call','Last call','Busiest hour','Call backs due'],
+    list.map(({k,s})=>[`<b>${esc(empName(k))}</b>`,fmt(s.N),fmt(s.IN.length),fmt(s.REC.length),fmt(s.MISS.length),pct(s.REC.length,s.IN.length),
+      fmt(s.OUT.length),fmt(s.OC.length),fmt(s.ONC.length),fmt(s.cust),dur(s.talk),dur(s.CON.length?s.talk/s.CON.length:0),
+      clock(s.first),clock(s.last),s.peak!=null?hourL(s.peak):'—',s.pend?`<span class="pill bad">${fmt(s.pend)}</span>`:'0']),{num:[1,2,3,4,5,6,7,8,9,10,11]});
+  $('empTable').querySelectorAll('tbody tr').forEach((tr,i)=>{tr.classList.add('c');tr.onclick=()=>setF({emp:list[i].k},'boardSec');});
+}
+function renderInternal(S){
+  const g=byKey(S.filter(r=>r.internal)).sort((a,b)=>b.n-a.n);
+  if(!g.length){$('intTable').innerHTML='<p class="none">No colleague extension calls match these filters.</p>';return;}
+  $('intTable').innerHTML=tbl(['Extension','Name','Calls','Answered','Missed','Talk time','First call','Last call'],
+    g.map(c=>['Ext '+esc(c.number),esc(c.name),fmt(c.n),fmt(c.rec),fmt(c.miss),dur(c.talk),clock(c.first),clock(c.last)]),{num:[2,3,4,5],
+    foot:['Total','',fmt(sum(g,c=>c.n)),fmt(sum(g,c=>c.rec)),fmt(sum(g,c=>c.miss)),dur(sum(g,c=>c.talk)),'','']});
+  wireRows('intTable',g.map(c=>c.key));
+}
+
+/* ===== Charts ===== */
+Chart.defaults.font.family="'Plus Jakarta Sans', sans-serif";Chart.defaults.font.size=12.5;Chart.defaults.color='#A6B4C8';
+function mk(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart($(id),cfg);}
+const hover=(e,els)=>{e.native.target.style.cursor=els.length?'pointer':'default';};
+const tip={backgroundColor:'rgba(14,30,52,.95)',padding:10,cornerRadius:10,titleColor:'#fff',bodyColor:'#DCE4EF'};
+const barOpts=(onClick)=>({responsive:true,maintainAspectRatio:false,onClick,onHover:onClick?hover:undefined,animation:REDUCE?false:{duration:450},
+  plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,useBorderRadius:true,borderRadius:3,padding:16}},tooltip:{...tip,callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.raw)}`}}},
+  scales:{x:{stacked:true,grid:{display:false},ticks:{autoSkip:false,maxRotation:0}},y:{stacked:true,beginAtZero:true,grid:{color:'rgba(255,255,255,.07)'},border:{display:false},ticks:{precision:0}}}});
+const donutOpts=onClick=>({responsive:true,maintainAspectRatio:false,cutout:'66%',onClick,onHover:hover,animation:REDUCE?false:{duration:450},
+  plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,useBorderRadius:true,borderRadius:3,padding:14}},tooltip:{...tip,callbacks:{label:c=>`${c.label}: ${fmt(c.raw)}`}}}});
+const bar=(label,data,color)=>({label,data,backgroundColor:color,borderRadius:5,borderSkipped:false,maxBarThickness:26});
+function renderCharts(S){
+  const all=ROWS.filter(r=>r.hour!=null).map(r=>r.hour),hs=[];
+  if(all.length)for(let h=Math.min(...all);h<=Math.max(...all);h++)hs.push(h);
+  const cnt=f=>hs.map(h=>S.filter(r=>r.hour===h&&f(r)).length);
+  mk('cHour',{type:'bar',data:{labels:hs.map(hourL),datasets:[
+    bar('Incoming answered',cnt(r=>r.dir==='in'&&r.connected),C.in),bar('Incoming missed',cnt(r=>r.dir==='in'&&!r.connected),C.miss),
+    bar('Outgoing connected',cnt(r=>r.dir==='out'&&r.connected),C.out),bar('Outgoing not connected',cnt(r=>r.dir==='out'&&!r.connected),C.warn)]},
+    options:barOpts((e,els)=>{if(els.length)setF({hour:String(hs[els[0].index])},'recSec');})});
+  const dk=['in','out'];
+  mk('cDir',{type:'doughnut',data:{labels:dk.map(k=>DIRL[k]),datasets:[{data:dk.map(k=>S.filter(r=>r.dir===k).length),backgroundColor:[C.in,C.out],borderWidth:0,spacing:3,borderRadius:6}]},
+    options:donutOpts((e,els)=>{if(els.length)setF({dir:dk[els[0].index]},'recSec');})});
+  const sk=Object.keys(ST).filter(k=>S.some(r=>r.status===k));
+  mk('cStatus',{type:'doughnut',data:{labels:sk.map(k=>ST[k].l),datasets:[{data:sk.map(k=>S.filter(r=>r.status===k).length),backgroundColor:sk.map(k=>ST[k].col),borderWidth:0,spacing:3,borderRadius:6}]},
+    options:donutOpts((e,els)=>{if(els.length)setF({status:sk[els[0].index]},'recSec');})});
+  const bk=[['Up to 30s',1,30],['31–60s',31,60],['1–3 min',61,180],['3–5 min',181,300],['5–10 min',301,600],['10 min+',601,1e9]];
+  const inb=(b,d)=>S.filter(r=>r.connected&&r.dir===d&&r.talk>=b[1]&&r.talk<=b[2]).length;
+  mk('cDur',{type:'bar',data:{labels:bk.map(b=>b[0]),datasets:[bar('Incoming',bk.map(b=>inb(b,'in')),C.in),bar('Outgoing',bk.map(b=>inb(b,'out')),C.out)]},options:barOpts(null)});
+}
+function renderHourTable(S){
+  const hs=[...new Set(S.filter(r=>r.hour!=null).map(r=>r.hour))].sort((a,b)=>a-b);
+  const rows=hs.map(h=>({h,s:stats(S.filter(r=>r.hour===h))}));
+  $('hourTable').innerHTML=rows.length?tbl(['Hour','Calls','Incoming','Answered','Missed','Outgoing','Not connected','Talk time'],
+    rows.map(({h,s})=>[hourL(h),fmt(s.N),fmt(s.IN.length),fmt(s.REC.length),fmt(s.MISS.length),fmt(s.OUT.length),fmt(s.ONC.length),dur(s.talk)]),{num:[1,2,3,4,5,6,7]}):'<p class="none">No calls.</p>';
+  $('hourTable').querySelectorAll('tbody tr').forEach((tr,i)=>{tr.classList.add('c');tr.onclick=()=>setF({hour:String(rows[i].h)},'recSec');});
+}
+
+/* ===== Outgoing failures ===== */
+function renderOutFail(S){
+  const fu=outFails(S),pend=fu.filter(x=>!x.n);
+  $('ofNote').innerHTML=fu.length?`${fmt(fu.length)} numbers had outgoing calls that didn't connect. <b style="color:#FFB0B0">${fmt(pend.length)} were never reached afterwards.</b>`:'Every outgoing call connected for these filters.';
+  if(!fu.length){$('ofTable').innerHTML='<p class="none">No failed outgoing calls.</p>';return;}
+  $('ofTable').innerHTML=tbl(['Status','Name','Number','Failed attempts','Reason','Last attempt','What happened next'],
+    fu.map(x=>{const why={};x.rows.forEach(r=>why[r.status]=(why[r.status]||0)+1);
+      return[x.n?'<span class="pill ok">Reached</span>':'<span class="pill bad">Not reached</span>',nameCell(x.key,x.internal),numCell(x.rows[0].number),
+        fmt(x.rows.length),Object.entries(why).map(([k,v])=>`${ST[k].l} ×${v}`).join(', '),when(x.last),
+        x.n?`${x.n.dir==='out'?'Connected on a later try':'They called in, answered'} at ${when(x.n)} <span class="sub">${mins(x.m)} later</span>`:'—'];}),{num:[3]});
+  wireRows('ofTable',fu.map(x=>x.key));
+}
+
+/* ===== Contacts and records ===== */
+let lastS=[];
+function renderContacts(S){lastS=S;drawContacts();}
+function drawContacts(){
+  const q=$('cq').value.trim().toLowerCase();
+  const g=byKey(lastS).filter(c=>!q||(c.name+' '+c.number).toLowerCase().includes(q)).sort((a,b)=>b.n-a.n||b.talk-a.talk);
+  $('cCount').textContent=`${fmt(g.length)} numbers`;
+  $('custTable').innerHTML=g.length?tbl(['Name','Number','Type','Calls','Incoming','Outgoing','Answered','Missed','Talk time','Last call'],
+    g.map(c=>[esc(c.name),numCell(c.number),c.internal?'<span class="pill int">Colleague</span>':'<span class="pill">Customer</span>',
+      fmt(c.n),fmt(c.in),fmt(c.out),fmt(c.rec),c.miss?`<b style="color:#FFB0B0">${fmt(c.miss)}</b>`:'0',dur(c.talk),when(c.last)]),{num:[3,4,5,6,7,8]}):'<p class="none">No numbers match that search.</p>';
+  wireRows('custTable',g.map(c=>c.key));
+}
+$('cq').oninput=drawContacts;
+function renderRecords(S){lastS=S;drawRecords();}
+function drawRecords(){
+  const q=$('rq').value.trim().toLowerCase(),multi=empKeys().length>1;
+  let rows=lastS.filter(r=>!q||[NAMES[r.key],r.number,r.result,r.desc,ST[r.status].l,DIRL[r.dir],r.action].join(' ').toLowerCase().includes(q));
+  const val={ts:r=>r.ts,name:r=>NAMES[r.key],dir:r=>r.dir,status:r=>r.status,dur:r=>r.dur,talk:r=>r.talk}[recSort.k];
+  rows=[...rows].sort((a,b)=>{const x=val(a),y=val(b);return(x>y?1:x<y?-1:0)*recSort.d;});
+  $('rCount').textContent=`Showing ${fmt(rows.length)} of ${fmt(ROWS.length)} calls`;
+  const head=['#','Time',...(multi?['Employee']:[]),'Name','Number','Direction','Result','RingCentral result','Duration','Talk time'];
+  const sortable=['','ts',...(multi?['']:[]),'name','','dir','status','','dur','talk'];
+  $('recTable').innerHTML=rows.length?tbl(head,rows.map(r=>[fmt(r.idx),when(r),...(multi?[esc(empName(r.empKey))]:[]),
+    nameCell(r.key,r.internal),numCell(r.number),dirPill(r.dir),stPill(r.status),
+    `${esc(r.action)}: ${esc(r.result)}${r.desc?`<span class="sub">${esc(r.desc)}</span>`:''}`,dur(r.dur),r.connected?dur(r.talk):'—']),
+    {num:multi?[0,9,10]:[0,8,9],sortable}):'<p class="none">No calls match these filters.</p>';
+  $('recTable').querySelectorAll('th[data-sort]').forEach(th=>th.onclick=e=>{e.stopPropagation();const k=th.dataset.sort;
+    recSort=recSort.k===k?{k,d:-recSort.d}:{k,d:k==='ts'?-1:1};drawRecords();});
+  wireRows('recTable',rows.map(r=>r.key));
+}
+$('rq').oninput=drawRecords;
+
+/* ===== Notes ===== */
+function renderNotes(){
+  const g={};ROWS.forEach(r=>{const k=r.action+'|'+r.result+'|'+r.dir;(g[k]=g[k]||{a:r.action,r:r.result,dir:r.dir,st:r.status,n:0,known:r.known}).n++;});
+  const rules=Object.values(g).sort((a,b)=>b.n-a.n);
+  $('ruleTable').innerHTML=tbl(['Action','Action result','Counted as','Calls'],
+    rules.map(x=>[esc(x.a),esc(x.r)+(x.known?'':' <span class="pill warn">Estimated</span>'),`${dirPill(x.dir)} ${stPill(x.st)}`,fmt(x.n)]),
+    {num:[3],foot:['Total','','',fmt(ROWS.length)]});
+  const ring=sum(ROWS,r=>r.ring),dups={};ROWS.forEach(r=>{const k=r.key+'|'+r.date+'|'+r.min;dups[k]=(dups[k]||0)+1;});
+  const dupN=Object.values(dups).filter(v=>v>1).length,generic=new Set(ROWS.filter(r=>NAMES[r.key]==='Wireless caller').map(r=>r.key)).size;
+  const unknown=ROWS.filter(r=>!r.known).length,hasDirCol=ROWS.some(r=>r.direction),hasExt=ROWS.some(r=>r.ext);
+  const N=[
+    `${fmt(FILES.length)} file${FILES.length>1?'s':''} read, ${fmt(ROWS.length+LEGS.length)} rows: ${FILES.map(f=>esc(f.fname)).join(', ')}.`,
+    hasDirCol?'Direction was taken from the file\'s Direction column.'
+      :'The file has no Direction column, so direction follows the RingCentral Action definitions: Phone Call is incoming, VoIP Call is outgoing.',
+    'Hang Up on an outgoing call means staff hung up while it was still ringing. On an incoming call it means the caller hung up before it was answered.',
+    `Ring time on missed and unconnected calls (${dur(ring)}) is not counted as talk time.`,
+    'Numbers with 2 to 5 digits (for example 101 or 105) are treated as colleague extensions, not customers.',
+    'A missed call counts as reached when any later connected call with the same number appears in the log, in either direction.',
+    'The "WORLD TOURS AND TRAVELS -" prefix is RingCentral caller ID text and is removed from displayed names.',
+    LEGS.length?`${fmt(LEGS.length)} Stopped or Answered Elsewhere rows were left out. They are extra legs of calls answered on another phone.`:'',
+    dupN?`${fmt(dupN)} times the same number appears more than once in the same minute. RingCentral's Simple view lists one row per call, so each is counted as a separate call.`:'',
+    generic?`${fmt(generic)} numbers show only "WIRELESS CALLER" from the carrier and are labelled Wireless caller.`:'',
+    hasExt?'Employees were taken from the file\'s Extension column.':'This file has no Extension column, so each file counts as one employee line.',
+    unknown?`${fmt(unknown)} calls had an unrecognised result and were estimated from their duration (marked Estimated).`:'Every call result was recognised. No call was left out or estimated.'
+  ].filter(Boolean);
+  $('notes').innerHTML=N.map(x=>`<li>${x}</li>`).join('');
+}
+
+/* ===== Drawer ===== */
+let lastFocus=null;
+function openContact(key){
+  const rows=ROWS.filter(r=>r.key===key).sort((a,b)=>a.ts-b.ts);if(!rows.length)return;
+  const s=stats(rows),multi=empKeys().length>1;lastFocus=document.activeElement;
+  $('dh').innerHTML=`<button class="x" id="dx" aria-label="Close">×</button><h3>${esc(NAMES[key])}</h3>
+    <div style="color:var(--muted);margin-top:4px">${numCell(rows[0].number)} ${rows[0].internal?'<span class="pill int">Colleague extension</span>':'<span class="pill">Customer</span>'}</div>`;
+  $('db').innerHTML=`<div class="dstats"><div><b>${fmt(s.N)}</b><span>Calls</span></div><div><b>${fmt(s.IN.length)}</b><span>Incoming</span></div>
+    <div><b>${fmt(s.OUT.length)}</b><span>Outgoing</span></div><div><b style="color:#FFB0B0">${fmt(s.MISS.length)}</b><span>Missed</span></div>
+    <div><b>${dur(s.talk)}</b><span>Talk time</span></div></div>
+    <h3 style="font-size:15px;margin:0 0 8px;color:var(--muted);font-weight:600">Call history, oldest first</h3>
+    <ul class="tl">${rows.map(r=>`<li><div><b>${clock(r)}</b><span class="sub">${dateL(r.dt)}</span></div>
+      <div>${dirPill(r.dir)} ${stPill(r.status)}<span class="sub">${esc(r.action)}: ${esc(r.result)}${multi?', '+esc(empName(r.empKey)):''}</span></div>
+      <div class="n">${r.connected?dur(r.talk):'<span class="sub">Rang '+dur(r.dur)+'</span>'}</div></li>`).join('')}</ul>`;
+  $('drawer').classList.add('open');$('scrim').classList.add('open');$('drawer').setAttribute('aria-hidden','false');
+  $('dx').onclick=closeDrawer;$('dx').focus();
+}
+function closeDrawer(){$('drawer').classList.remove('open');$('scrim').classList.remove('open');$('drawer').setAttribute('aria-hidden','true');if(lastFocus)lastFocus.focus();}
+$('scrim').onclick=closeDrawer;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+/* ===== Print and export ===== */
+$('printBtn').onclick=()=>window.print();
+$('exportBtn').onclick=()=>{
+  const S=filtered(),s=stats(S),ml=missedList(S),strip=t=>String(t).replace(/<[^>]+>/g,'');
+  const out=[['Global Travel and Tours — RingCentral call report'],['Period',strip(periodText(S))],[],
+    ['Summary','Value'],['Total calls',s.N],['Incoming',s.IN.length],['Outgoing',s.OUT.length],['Unique incoming',uniq(s.IN)],
+    ['Unique outgoing',uniq(s.OUT)],['Incoming answered',s.REC.length],['Missed calls',s.MISS.length],['Outgoing connected',s.OC.length],
+    ['Outgoing not connected',s.ONC.length],['Talk time (minutes)',(s.talk/60).toFixed(1)],['Customers never reached',pendingCustomers(S).length],[],
+    ['Employee','Calls','Incoming','Answered','Missed','Outgoing','Connected','Talk time (minutes)'],
+    ...empKeys().map(k=>{const e=stats(S.filter(r=>r.empKey===k));return[empName(k),e.N,e.IN.length,e.REC.length,e.MISS.length,e.OUT.length,e.OC.length,(e.talk/60).toFixed(1)];}),[],
+    ['Missed calls'],['Date','Time','Caller number or ext','Caller name','Type','Ring time (s)','What happened next'],
+    ...ml.map(({r,n,m,byStaff})=>[r.date,r.time,r.number,NAMES[r.key],r.internal?'Colleague':'Customer',r.dur,n?`${byStaff?'Staff called back':'Caller tried again'} at ${n.time} (${m} min later)`:'Never reached']),[],
+    ['#','Date','Time','Employee','Name','Number','Direction','Result','Action','Action result','Duration (s)','Talk time (s)'],
+    ...[...S].sort((a,b)=>a.ts-b.ts).map(r=>[r.idx,r.date,r.time,empName(r.empKey),NAMES[r.key],r.number,DIRL[r.dir],ST[r.status].l,r.action,r.result,r.dur,r.talk])];
+  const csv=out.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='GTT_Call_Report.csv';a.click();
+};
+</script>
+</body>
+</html>
